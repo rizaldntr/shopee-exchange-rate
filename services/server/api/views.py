@@ -1,13 +1,19 @@
-from rest_framework import generics
+from rest_framework import viewsets
+from rest_framework.response import Response
+from rest_framework import status
+
 from .models import ExchangeRates
 from .serializers import ExchangeRatesSerializer
 
 # Create your views here.
 
 
-class ListExchangeRatesView(generics.ListAPIView):
+class ExchangeRatesViewSet(viewsets.ViewSet):
     """
-    Provides a get method handler.
+    ViewSet exchange-rates api
     """
-    queryset = ExchangeRates.objects.all()
-    serializer_class = ExchangeRatesSerializer
+
+    def list(self, request, version="v1"):
+        queryset = ExchangeRates.objects.all()
+        serializer = ExchangeRatesSerializer(queryset, many=True)
+        return Response(serializer.data)

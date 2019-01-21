@@ -1,8 +1,9 @@
 from django.conf.urls import url, include
-from .views import ListExchangeRatesView
+from .views import ExchangeRatesViewSet
 
 app_name = 'api'
 
 urlpatterns = [
-    url(r'', ListExchangeRatesView.as_view(), name='exchange-rates-all')
+    url(r'^$', ExchangeRatesViewSet.as_view(
+        {'get': 'list'}), name='exchange-rates-all')
 ]
