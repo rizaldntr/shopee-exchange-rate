@@ -1,0 +1,22 @@
+stages:
+  - test
+
+server_test:
+  image: python:3.6
+  stage: test
+  services:
+    - postgres:latest
+  variables:
+    POSTGRES_DB: test
+    POSTGRES_USER: runner
+    POSTGRES_PASSWORD: ""
+  before_script:
+    - cd services/server
+    - pip install -r requirements.txt
+    - python manage.py makemigrations
+    - python manage.py migrate
+  when: on_success
+  script:
+    - coverage run --source="." manage.py test
+    - coverage report -m
+    - pycodestyle --exclude='manage.py','./server/*','./*/migrations','./*/apps.py','./*/urls.py','./*/models.py' ./
