@@ -40,3 +40,41 @@ class GetAllExchangeRatesTest(BaseViewTest):
         serialized = ExchangeRatesSerializer(expected, many=True)
         self.assertEqual(response.data, serialized.data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+
+class CreateExchangeRatesTest(BaseViewTest):
+
+    def test_create_exchange_rate_success(self):
+        """
+        This test ensures that we can create new data when make
+        a POST request to exchange-rates/ endpoint
+        """
+
+        # hit the API endpoint
+        response = self.client.post(
+            reverse("api:create-exchange-rate", kwargs={"version": "v1"}),
+            data={"from_code": "IDR", "to_code": "USD"},
+            format="json"
+        )
+
+        # fetch the data from db
+        expected = ExchangeRates.objects.last()
+        serialized = ExchangeRatesSerializer(expected)
+        self.assertEqual(response.data, serialized.data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_create_exchange_rate_failed_with_duplicate_data(self):
+        """
+        This test ensures that we can't create new data with duplicate data
+        on database when make a POST request to exchange-rates/ endpoint
+        return bad request
+        """
+
+        # hit the API endpoint
+        response = self.client.post(
+            reverse("api:create-exchange-rate", kwargs={"version": "v1"}),
+            data={"from_code": "GBP", "to_code": "USD"},
+            format="json"
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
