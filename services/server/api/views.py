@@ -24,4 +24,5 @@ class ExchangeRatesViewSet(viewsets.ViewSet):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         else:
-            return Response({'error': 'Data is invalid'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error': 'Data is invalid'},
+                            status=status.HTTP_400_BAD_REQUEST)
