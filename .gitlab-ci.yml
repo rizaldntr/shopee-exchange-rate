@@ -10,6 +10,8 @@ server_test:
     POSTGRES_DB: test
     POSTGRES_USER: runner
     POSTGRES_PASSWORD: ""
+    POSTGRES_PORT: 5432
+    POSTGRES_HOST: postgres
   before_script:
     - cd services/server
     - pip install -r requirements.txt
