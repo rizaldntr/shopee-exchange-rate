@@ -3,4 +3,6 @@ from .models import ExchangeRates
 
 
 class ExchangeRatesSerializer(serializers.ModelSerializer):
-    pass
+    class Meta:
+        model = ExchangeRates
+        fields = ("from_code", "to_code")

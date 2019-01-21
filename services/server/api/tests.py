@@ -33,7 +33,7 @@ class GetAllExchangeRatesTest(BaseViewTest):
         """
         # hit the API endpoint
         response = self.client.get(
-            reverse("exchange-rates-all", kwargs={"version": "v1"})
+            reverse("api:exchange-rates-all", kwargs={"version": "v1"})
         )
         # fetch the data from db
         expected = ExchangeRates.objects.all()
