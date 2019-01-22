@@ -94,3 +94,55 @@ class CreateExchangeRatesTest(BaseViewTest):
         )
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+
+class DeleteExchangeRatesTest(BaseViewTest):
+
+    def test_delete_exchange_rate_success(self):
+        """
+        This test ensures that we can delete data when make
+        a DELETE request to exchange-rates/:id endpoint with
+        valid id
+        """
+
+        # fetch old data before API call
+        old_exchange_rates_list = ExchangeRates.objects.all()
+        old_exchange_rate_length = len(old_exchange_rates_list)
+
+        # hit the API endpoint
+        response = self.client.delete(
+            reverse("api:delete-exchange-rate",
+                    kwargs={"version": "v1", "pk": 1})
+        )
+
+        # fetch new data before API call
+        new_exchange_rates_list = ExchangeRates.objects.all()
+        new_exchange_rate_length = len(new_exchange_rates_list)
+        self.assertEqual(old_exchange_rate_length - 1,
+                         new_exchange_rate_length)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+    def test_delete_exchange_rate_failed_wtih_invalid_id(self):
+        """
+        This test ensures that we can delete data when make
+        a DELETE request to exchange-rates/:id endpoint with
+        valid id
+        """
+
+        # fetch old data before API call
+        old_exchange_rates_list = ExchangeRates.objects.all()
+        old_exchange_rate_length = len(old_exchange_rates_list)
+
+        # hit the API endpoint
+        response = self.client.delete(
+            reverse("api:delete-exchange-rate",
+                    kwargs={"version": "v1", "pk": 1000})
+        )
+
+        # fetch new data before API call
+        new_exchange_rates_list = ExchangeRates.objects.all()
+        new_exchange_rate_length = len(new_exchange_rates_list)
+        self.assertEqual(old_exchange_rate_length,
+                         new_exchange_rate_length)
+
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
