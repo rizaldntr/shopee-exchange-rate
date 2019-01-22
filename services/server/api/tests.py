@@ -183,3 +183,60 @@ class RetrieveExchangeRatesTest(BaseViewTest):
         )
 
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+
+class UpdateExchangeRatesTest(BaseViewTest):
+
+    def test_update_exchange_rate_success(self):
+        """
+        This test ensures that we can update data when make
+        a POST request to exchange-rates/:id/update endpoint
+        """
+
+        # hit the API endpoint
+        response = self.client.post(
+            reverse("api:update-exchange-rate",
+                    kwargs={"version": "v1", "pk": 1}),
+            data={"from_code": "DZD", "to_code": "EUR"},
+            format="json"
+        )
+
+        # fetch the data from db
+        expected = ExchangeRates.objects.get(id=1)
+        serialized = ExchangeRatesSerializer(expected)
+        self.assertEqual(response.data, serialized.data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_update_exchange_rate_failed_with_duplicate_data(self):
+        """
+        This test ensures that we can't update data with duplicate data
+        on database when make a POST request to exchange-rates/:id/update
+        endpoint and return bad request
+        """
+
+        # hit the API endpoint
+        response = self.client.post(
+            reverse("api:update-exchange-rate",
+                    kwargs={"version": "v1", "pk": 1}),
+            data={"from_code": "JPY", "to_code": "IDR"},
+            format="json"
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_update_exchange_rate_failed_with_invalid_data(self):
+        """
+        This test ensures that we can't update data with invalid data
+        when make a POST request to exchange-rates/:id/update endpoint
+        and return bad request
+        """
+
+        # hit the API endpoint
+        response = self.client.post(
+            reverse("api:update-exchange-rate",
+                    kwargs={"version": "v1", "pk": 1}),
+            data={"from_code": "GBP", "to_code": ""},
+            format="json"
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
