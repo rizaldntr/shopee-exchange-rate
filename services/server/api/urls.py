@@ -10,6 +10,8 @@ urlpatterns = [
         {'get': 'retrieve'}), name='exchange-rate-detail'),
     url(r'^create$', ExchangeRatesViewSet.as_view(
         {'post': 'create'}), name='create-exchange-rate'),
+    url(r'^(?P<pk>\d+)/update$', ExchangeRatesViewSet.as_view(
+        {'post': 'update'}), name='update-exchange-rate'),
     url(r'^(?P<pk>\d+)/delete$', ExchangeRatesViewSet.as_view(
         {'delete': 'destroy'}), name='delete-exchange-rate'),
 ]
