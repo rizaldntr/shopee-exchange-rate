@@ -126,7 +126,7 @@ class DeleteExchangeRatesTest(BaseViewTest):
         """
         This test ensures that we can delete data when make
         a DELETE request to exchange-rates/:id endpoint with
-        valid id
+        invalid id
         """
 
         # fetch old data before API call
@@ -144,5 +144,42 @@ class DeleteExchangeRatesTest(BaseViewTest):
         new_exchange_rate_length = len(new_exchange_rates_list)
         self.assertEqual(old_exchange_rate_length,
                          new_exchange_rate_length)
+
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+
+class RetrieveExchangeRatesTest(BaseViewTest):
+
+    def test_retrieve_exchange_rate_success_wtih_valid_id(self):
+        """
+        This test ensures that we can't retrieve data when make
+        a GET request to exchange-rates/:id endpoint with
+        valid id
+        """
+
+        # hit the API endpoint
+        response = self.client.get(
+            reverse("api:exchange-rate-detail",
+                    kwargs={"version": "v1", "pk": 1})
+        )
+
+        # fetch db
+        expected = ExchangeRates.objects.get(id=1)
+        serialized = ExchangeRatesSerializer(expected)
+        self.assertEqual(response.data, serialized.data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_retrieve_exchange_rate_failed_wtih_invalid_id(self):
+        """
+        This test ensures that we can't retrieve data when make
+        a GET request to exchange-rates/:id endpoint with
+        invalid id
+        """
+
+        # hit the API endpoint
+        response = self.client.get(
+            reverse("api:exchange-rate-detail",
+                    kwargs={"version": "v1", "pk": 1000})
+        )
 
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
