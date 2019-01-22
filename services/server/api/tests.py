@@ -78,3 +78,19 @@ class CreateExchangeRatesTest(BaseViewTest):
         )
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_create_exchange_rate_failed_with_invalid_data(self):
+        """
+        This test ensures that we can't create new data with invalid data
+        when make a POST request to exchange-rates/ endpoint return bad
+        request
+        """
+
+        # hit the API endpoint
+        response = self.client.post(
+            reverse("api:create-exchange-rate", kwargs={"version": "v1"}),
+            data={"from_code": "GBP", "to_code": ""},
+            format="json"
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
