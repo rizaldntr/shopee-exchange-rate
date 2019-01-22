@@ -6,6 +6,8 @@ app_name = 'api'
 urlpatterns = [
     url(r'^$', ExchangeRatesViewSet.as_view(
         {'get': 'list'}), name='exchange-rates-all'),
+    url(r'^(?P<pk>\d+)$', ExchangeRatesViewSet.as_view(
+        {'get': 'retrieve'}), name='exchange-rate-detail'),
     url(r'^create$', ExchangeRatesViewSet.as_view(
         {'post': 'create'}), name='create-exchange-rate'),
     url(r'^(?P<pk>\d+)/delete$', ExchangeRatesViewSet.as_view(

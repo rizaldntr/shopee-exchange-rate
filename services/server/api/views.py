@@ -30,6 +30,11 @@ class ExchangeRatesViewSet(viewsets.ViewSet):
                             status=status.HTTP_400_BAD_REQUEST)
 
     def destroy(self, request, version="v1", pk=None):
-        exchange_rate = get_object_or_404(ExchangeRates, id=pk)
-        exchange_rate.delete()
+        queryset = get_object_or_404(ExchangeRates, id=pk)
+        queryset.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+    def retrieve(self, request, version="v1", pk=None):
+        queryset = get_object_or_404(ExchangeRates, id=pk)
+        serializer = ExchangeRatesSerializer(queryset)
+        return Response(data=serializer.data, status=status.HTTP_200_OK)
