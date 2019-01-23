@@ -14,3 +14,15 @@ class ExchangeRates(models.Model):
 
     def __str__(self):
         return "{} - {}".format(self.from_code, self.to_code)
+
+
+class DailyExchangeRates(models.Model):
+    class Meta:
+        unique_together = ("date", "exchange_rate")
+
+    # rate
+    rate = models.FloatField()
+    # date the daily exchange rate
+    date = models.DateField()
+    # foreign key to model ExchangeRates
+    exchange_rate = models.ForeignKey(ExchangeRates, on_delete=models.CASCADE)
