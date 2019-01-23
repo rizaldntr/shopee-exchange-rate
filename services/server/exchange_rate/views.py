@@ -116,7 +116,7 @@ class DailyExchangeRatesDetail(APIView):
             to_code = request.data['to_code']
             rate = request.data['rate']
             date = request.data['date']
-        except:
+        except Exception:
             return Response({'errors': 'Your request is invalid'},
                             status=status.HTTP_400_BAD_REQUEST)
 

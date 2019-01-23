@@ -14,7 +14,8 @@ class BaseViewTest(APITestCase):
     def create_exchange_rate(from_code="", to_code=""):
         assert from_code != ""
         assert to_code != ""
-        return ExchangeRates.objects.create(from_code=from_code, to_code=to_code)
+        return ExchangeRates.objects.create(from_code=from_code,
+                                            to_code=to_code)
 
     @staticmethod
     def create_daily_exchange_rate(exchange_rate_id, rate, date):
@@ -88,7 +89,8 @@ class CreateExchangeRatesTest(BaseViewTest):
         """
 
         # hit the API endpoint
-        response = self.api_call(data={"from_code": "IDR", "to_code": "USD"})
+        response = self.api_call(data={"from_code": "IDR",
+                                       "to_code": "USD"})
 
         # fetch the data from db
         expected = ExchangeRates.objects.last()
@@ -269,7 +271,8 @@ class CreateDailyExchangeRate(BaseViewTest):
 
         # hit the API endpoint
         response = self.api_call(
-            data={"from_code": "JPY", "to_code": "IDR", "rate": 100, "date": "2018-07-03"})
+            data={"from_code": "JPY", "to_code": "IDR",
+                  "rate": 100, "date": "2018-07-03"})
 
         # fetch the data from db
         expected = DailyExchangeRates.objects.last()
@@ -286,12 +289,13 @@ class CreateDailyExchangeRate(BaseViewTest):
 
         # hit the API endpoint
         response = self.api_call(
-            data={"from_code": "GBP", "to_code": "USD", "rate": 100, "date": "2018-07-08"})
+            data={"from_code": "GBP", "to_code": "USD",
+                  "rate": 100, "date": "2018-07-08"})
 
         # fetch the data from db
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-    def test_create_daily_exchange_rate_failed_with_exchange_rate_data_not_found(self):
+    def test_create_failed_with_exchange_rate_data_not_found(self):
         """
         This test ensures that we can't create daily exchange rate
         when make a POST request to daily-exchange-rates endpoint
@@ -300,7 +304,8 @@ class CreateDailyExchangeRate(BaseViewTest):
 
         # hit the API endpoint
         response = self.api_call(
-            data={"from_code": "RZL", "to_code": "LZR", "rate": 100, "date": "2018-07-08"})
+            data={"from_code": "RZL", "to_code": "LZR",
+                  "rate": 100, "date": "2018-07-08"})
 
         # fetch the data from db
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
@@ -314,7 +319,8 @@ class CreateDailyExchangeRate(BaseViewTest):
 
         # hit the API endpoint
         response = self.api_call(
-            data={"from_code": "RZL", "to_code": "LZR", "date": "2018-07-08"})
+            data={"from_code": "RZL", "to_code": "LZR",
+                  "date": "2018-07-08"})
 
         # fetch the data from db
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
@@ -347,7 +353,7 @@ class RetrieveDailyExchangeRate(BaseViewTest):
         self.assertEqual(response.data["daily_exchange_rate"], serialized.data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    def test_retrieve_daily_exchange_rate_failed_with_not_found_exchange_rate(self):
+    def test_retrieve_failed_with_not_found_exchange_rate(self):
         """
         This test ensures that we can't retrieve data when make
         a GET request to daily-exchange-rates/ endpoint with
