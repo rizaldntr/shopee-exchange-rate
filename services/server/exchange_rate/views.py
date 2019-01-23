@@ -126,7 +126,7 @@ class DailyExchangeRatesDetail(APIView):
         serializer = DailyExchangeRatesSerializer(data=data)
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
 
         return Response(serializer.errors,
                         status=status.HTTP_400_BAD_REQUEST)
@@ -166,12 +166,9 @@ class DailyExchangeRatesList(APIView):
             if len(daily_exchange_rate) < 7:
                 average = ""
                 rate = "insufficient data"
-            elif daily_exchange_rate[0].date != date.date():
-                average = ""
-                rate = "insufficient data"
             else:
                 average = self.get_average_rate(daily_exchange_rate)
-                rate = daily_exchange_rate[0].date
+                rate = daily_exchange_rate[0].rate
             tmp_data = {'average': average, 'rate': rate}
             exchange_rate_serializer = ExchangeRatesSerializer(data)
             tmp_data.update(exchange_rate_serializer.data)

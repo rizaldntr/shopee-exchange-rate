@@ -1,8 +1,8 @@
 from django.urls import reverse
 from rest_framework.test import APITestCase, APIClient
 from rest_framework.views import status
-from .models import ExchangeRates
-from .serializers import ExchangeRatesSerializer
+from .models import ExchangeRates, DailyExchangeRates
+from .serializers import ExchangeRatesSerializer, DailyExchangeRatesSerializer
 
 # Create your tests here.
 
@@ -14,14 +14,33 @@ class BaseViewTest(APITestCase):
     def create_exchange_rate(from_code="", to_code=""):
         assert from_code != ""
         assert to_code != ""
-        ExchangeRates.objects.create(from_code=from_code, to_code=to_code)
+        return ExchangeRates.objects.create(from_code=from_code, to_code=to_code)
+
+    @staticmethod
+    def create_daily_exchange_rate(exchange_rate_id, rate, date):
+        assert exchange_rate_id != ""
+        assert rate != ""
+        assert date != ""
+        DailyExchangeRates.objects.create(
+            exchange_rate=exchange_rate_id, rate=rate, date=date)
 
     def setUp(self):
         # add test data
-        self.create_exchange_rate("GBP", "USD")
-        self.create_exchange_rate("USD", "GBP")
-        self.create_exchange_rate("USD", "IDR")
-        self.create_exchange_rate("JPY", "IDR")
+        exchange_rate_1 = self.create_exchange_rate("GBP", "USD")
+        exchange_rate_2 = self.create_exchange_rate("USD", "GBP")
+        exchange_rate_3 = self.create_exchange_rate("USD", "IDR")
+        exchange_rate_4 = self.create_exchange_rate("JPY", "IDR")
+
+        self.create_daily_exchange_rate(exchange_rate_1, 1, "2018-07-08")
+        self.create_daily_exchange_rate(exchange_rate_1, 1, "2018-07-07")
+        self.create_daily_exchange_rate(exchange_rate_1, 1, "2018-07-06")
+        self.create_daily_exchange_rate(exchange_rate_1, 1, "2018-07-05")
+        self.create_daily_exchange_rate(exchange_rate_1, 1, "2018-07-04")
+        self.create_daily_exchange_rate(exchange_rate_1, 1, "2018-07-03")
+        self.create_daily_exchange_rate(exchange_rate_1, 1, "2018-07-02")
+        self.create_daily_exchange_rate(exchange_rate_2, 1, "2018-07-02")
+        self.create_daily_exchange_rate(exchange_rate_3, 1, "2018-07-02")
+        self.create_daily_exchange_rate(exchange_rate_4, 1, "2018-07-02")
 
     def get_list_or_detail_serialized_data_from_db(self, pk=None):
         if pk is None:
@@ -193,7 +212,7 @@ class UpdateExchangeRatesTest(BaseViewTest):
     def test_update_exchange_rate_success(self):
         """
         This test ensures that we can update data when make
-        a POST request to exchange-rates/:id/update endpoint
+        a PUT request to exchange-rates/:id/update endpoint
         """
 
         # hit the API endpoint
@@ -208,7 +227,7 @@ class UpdateExchangeRatesTest(BaseViewTest):
     def test_update_exchange_rate_failed_with_duplicate_data(self):
         """
         This test ensures that we can't update data with duplicate data
-        on database when make a POST request to exchange-rates/:id/update
+        on database when make a PUT request to exchange-rates/:id/update
         endpoint and return bad request
         """
 
@@ -220,7 +239,7 @@ class UpdateExchangeRatesTest(BaseViewTest):
     def test_update_exchange_rate_failed_with_invalid_data(self):
         """
         This test ensures that we can't update data with invalid data
-        when make a POST request to exchange-rates/:id/update endpoint
+        when make a PUT request to exchange-rates/:id/update endpoint
         and return bad request
         """
 
@@ -229,3 +248,152 @@ class UpdateExchangeRatesTest(BaseViewTest):
             pk=1, data={"from_code": "GBP", "to_code": ""})
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+
+class CreateDailyExchangeRate(BaseViewTest):
+
+    def api_call(self, data={}):
+        return self.client.post(
+            reverse("exchange-rate:daily-detail",
+                    kwargs={"version": "v1"}),
+            data=data,
+            format="json"
+        )
+
+    def test_create_daily_exchange_rate_success(self):
+        """
+        This test ensures that we can create daily exchange rate
+        when make a POST request to daily-exchange-rates endpoint
+        and return 201
+        """
+
+        # hit the API endpoint
+        response = self.api_call(
+            data={"from_code": "JPY", "to_code": "IDR", "rate": 100, "date": "2018-07-03"})
+
+        # fetch the data from db
+        expected = DailyExchangeRates.objects.last()
+        serialized = DailyExchangeRatesSerializer(expected)
+        self.assertEqual(response.data, serialized.data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_create_daily_exchange_rate_failed_with_duplicate_date(self):
+        """
+        This test ensures that we can't create daily exchange rate
+        when make a POST request to daily-exchange-rates endpoint
+        with duplicate date to same exchange_rate_id and return 400
+        """
+
+        # hit the API endpoint
+        response = self.api_call(
+            data={"from_code": "GBP", "to_code": "USD", "rate": 100, "date": "2018-07-08"})
+
+        # fetch the data from db
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_create_daily_exchange_rate_failed_with_exchange_rate_data_not_found(self):
+        """
+        This test ensures that we can't create daily exchange rate
+        when make a POST request to daily-exchange-rates endpoint
+        with invalid exchange_rate_id and return 404
+        """
+
+        # hit the API endpoint
+        response = self.api_call(
+            data={"from_code": "RZL", "to_code": "LZR", "rate": 100, "date": "2018-07-08"})
+
+        # fetch the data from db
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_create_daily_exchange_rate_failed_with_invalid_data(self):
+        """
+        This test ensures that we can't create daily exchange rate
+        when make a POST request to daily-exchange-rates endpoint
+        with invalid data and return 400
+        """
+
+        # hit the API endpoint
+        response = self.api_call(
+            data={"from_code": "RZL", "to_code": "LZR", "date": "2018-07-08"})
+
+        # fetch the data from db
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+
+class RetrieveDailyExchangeRate(BaseViewTest):
+    def api_call(self, from_code, to_code):
+        return self.client.get(
+            reverse("exchange-rate:daily-detail",
+                    kwargs={"version": "v1"}),
+            data={"from_code": from_code, "to_code": to_code},
+        )
+
+    def test_retrieve_daily_exchange_rate_success(self):
+        """
+        This test ensures that we can retrieve data when make
+        a GET request to daily-exchange-rates/ endpoint with
+        query param from_code and to_code
+        """
+
+        # hit the API endpoint
+        response = self.api_call(from_code="GBP", to_code="USD")
+        exchange_rate = ExchangeRates.objects.get(
+            from_code="GBP", to_code="USD")
+        expected = DailyExchangeRates.objects.filter(
+            exchange_rate=exchange_rate)
+        serialized = DailyExchangeRatesSerializer(expected, many=True)
+        self.assertEqual(response.data["average"], 1.0)
+        self.assertEqual(response.data["variance"], 0)
+        self.assertEqual(response.data["daily_exchange_rate"], serialized.data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_retrieve_daily_exchange_rate_failed_with_not_found_exchange_rate(self):
+        """
+        This test ensures that we can't retrieve data when make
+        a GET request to daily-exchange-rates/ endpoint with
+        invalid query param from_code and to_code
+        """
+
+        response = self.api_call(from_code="GBP", to_code="LZR")
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+
+class ListDailyExchangeRates(BaseViewTest):
+
+    def api_call(self, data):
+        return self.client.get(
+            reverse("exchange-rate:daily-list",
+                    kwargs={"version": "v1"}),
+            data=data,
+        )
+
+    def test_get_list_daily_exchange_with_date(self):
+        """
+        This test ensures that we can get all data when make
+        a GET request to daily-exchange-rates/list endpoint with
+        query param date and return exchange rate with rate and
+        average from last 7 record from the date
+        """
+
+        response = self.api_call({"date": "2018-07-08"})
+        self.assertEqual(response.data[0]["rate"], 1.0)
+        self.assertEqual(response.data[0]["average"], 1.0)
+        self.assertEqual(response.data[1]["rate"], "insufficient data")
+        self.assertEqual(response.data[2]["rate"], "insufficient data")
+        self.assertEqual(response.data[3]["rate"], "insufficient data")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_list_daily_exchange_without_date(self):
+        """
+        This test ensures that we can get all data when make
+        a GET request to daily-exchange-rates/list endpoint with
+        query param today date and return exchange rate with rate and
+        average from last 7 record from the date
+        """
+
+        response = self.api_call({})
+        self.assertEqual(response.data[0]["rate"], "insufficient data")
+        self.assertEqual(response.data[1]["rate"], "insufficient data")
+        self.assertEqual(response.data[2]["rate"], "insufficient data")
+        self.assertEqual(response.data[3]["rate"], "insufficient data")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
