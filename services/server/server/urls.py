@@ -15,9 +15,17 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include, re_path
+from django.conf.urls import url
+from rest_framework.schemas import get_schema_view
+from rest_framework_swagger.renderers import SwaggerUIRenderer, OpenAPIRenderer
+
+schema_view = get_schema_view(title='Exchange Rate API', renderer_classes=[
+                              OpenAPIRenderer, SwaggerUIRenderer])
+
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     re_path('api/(?P<version>(v1|v2))/',
             include('exchange_rate.urls', namespace='exchange-rate')),
+    url(r'^docs', schema_view, name="docs"),
 ]
