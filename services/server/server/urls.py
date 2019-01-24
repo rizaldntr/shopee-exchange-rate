@@ -16,6 +16,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include, re_path
 from django.conf.urls import url
+from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from rest_framework.schemas import get_schema_view
 from rest_framework_swagger.renderers import SwaggerUIRenderer, OpenAPIRenderer
 
@@ -29,3 +30,5 @@ urlpatterns = [
             include('exchange_rate.urls', namespace='exchange-rate')),
     url(r'^docs', schema_view, name="docs"),
 ]
+
+urlpatterns += staticfiles_urlpatterns()
