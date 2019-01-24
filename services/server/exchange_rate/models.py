@@ -6,6 +6,9 @@ from django.db import models
 class ExchangeRates(models.Model):
     class Meta:
         unique_together = ("from_code", "to_code")
+        indexes = [
+            models.Index(fields=['from_code', 'to_code', ]),
+        ]
 
     # from code exchange rate
     from_code = models.CharField(max_length=255, null=False)
