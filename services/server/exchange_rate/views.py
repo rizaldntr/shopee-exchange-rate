@@ -17,9 +17,9 @@ from .serializers import ExchangeRatesSerializer, DailyExchangeRatesSerializer
 
 
 class ExchangeRatesList(APIView):
-    """
-    List all exchange ratess, or create a new exchange rates.
-    """
+
+    def get_serializer(self):
+        return ExchangeRatesSerializer()
 
     def get(self, request, format=None, version="v1"):
         queryset = ExchangeRates.objects.all()
@@ -27,6 +27,9 @@ class ExchangeRatesList(APIView):
         return Response(serializer.data)
 
     def post(self, request, format=None, version="v1"):
+        """
+        Create new exchange rate
+        """
         serializer = ExchangeRatesSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
@@ -37,9 +40,9 @@ class ExchangeRatesList(APIView):
 
 
 class ExchangeRatesDetail(APIView):
-    """
-    Retrieve, update or delete a exchange rate instance.
-    """
+
+    def get_serializer(self):
+        return ExchangeRatesSerializer()
 
     def get_object(self, pk):
         try:
@@ -48,11 +51,17 @@ class ExchangeRatesDetail(APIView):
             raise Http404
 
     def get(self, request, pk, format=None, version="v1"):
+        """
+        Return detail exchange rate
+        """
         exchange_rate = self.get_object(pk)
         serializer = ExchangeRatesSerializer(exchange_rate)
         return Response(serializer.data)
 
     def put(self, request, pk, format=None, version="v1"):
+        """
+        Update exchange rate data
+        """
         exchange_rate = self.get_object(pk)
         serializer = ExchangeRatesSerializer(exchange_rate, data=request.data)
         if serializer.is_valid():
@@ -61,6 +70,9 @@ class ExchangeRatesDetail(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, pk, format=None, version="v1"):
+        """
+        Delete exchange rate data
+        """
         exchange_rate = self.get_object(pk)
         exchange_rate.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
@@ -70,6 +82,9 @@ class DailyExchangeRatesDetail(APIView):
     """
     Detail daily exchange rates, or create a new daily exchange rates.
     """
+
+    def get_serializer(self):
+        return DailyExchangeRatesSerializer()
 
     def get_object(self, from_code, to_code):
         try:
@@ -93,6 +108,9 @@ class DailyExchangeRatesDetail(APIView):
         return (variance, average)
 
     def get(self, request, format=None, version="v1"):
+        """
+        Return 7 most recent daily exchange rate
+        """
         from_code = request.query_params.get('from_code', '')
         to_code = request.query_params.get('to_code', '')
         exchange_rate = self.get_object(from_code, to_code)
@@ -111,6 +129,9 @@ class DailyExchangeRatesDetail(APIView):
         return Response(data, status=status.HTTP_200_OK)
 
     def post(self, request, format=None, version="v1"):
+        """
+        Create new daily exchange rate data
+        """
         try:
             from_code = request.data['from_code']
             to_code = request.data['to_code']
@@ -137,11 +158,13 @@ class DailyExchangeRatesList(APIView):
     List daily exchange rates
     """
 
+    def get_serializer(self):
+        return DailyExchangeRatesSerializer()
+
     def get_average_rate(self, daily_exhange_rate):
         sum_rate = 0
         for data in daily_exhange_rate:
             sum_rate = sum_rate + data.rate
-
         return sum_rate/len(daily_exhange_rate)
 
     def get_daily_exchange_rate(self, exchange_rate, date, last_week_date):
@@ -150,6 +173,9 @@ class DailyExchangeRatesList(APIView):
             date__range=[last_week_date, date]).order_by("-date")
 
     def get(self, request, format=None, version="v1"):
+        """
+        Return list rate and average per data by date
+        """
         date = request.query_params.get('date', None)
         if date is None:
             date = datetime.date.today()
