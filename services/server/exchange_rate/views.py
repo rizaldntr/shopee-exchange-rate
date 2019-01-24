@@ -22,9 +22,6 @@ class ExchangeRatesList(APIView):
         return ExchangeRatesSerializer()
 
     def get(self, request, format=None, version="v1"):
-        """
-        Return all exchange rates data
-        """
         queryset = ExchangeRates.objects.all()
         serializer = ExchangeRatesSerializer(queryset, many=True)
         return Response(serializer.data)
@@ -140,7 +137,7 @@ class DailyExchangeRatesDetail(APIView):
             to_code = request.data['to_code']
             rate = request.data['rate']
             date = request.data['date']
-        except:
+        except Exception:
             return Response({'errors': 'Your request is invalid'},
                             status=status.HTTP_400_BAD_REQUEST)
 
@@ -150,7 +147,7 @@ class DailyExchangeRatesDetail(APIView):
         serializer = DailyExchangeRatesSerializer(data=data)
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
 
         return Response(serializer.errors,
                         status=status.HTTP_400_BAD_REQUEST)
@@ -168,7 +165,6 @@ class DailyExchangeRatesList(APIView):
         sum_rate = 0
         for data in daily_exhange_rate:
             sum_rate = sum_rate + data.rate
-
         return sum_rate/len(daily_exhange_rate)
 
     def get_daily_exchange_rate(self, exchange_rate, date, last_week_date):
@@ -196,12 +192,9 @@ class DailyExchangeRatesList(APIView):
             if len(daily_exchange_rate) < 7:
                 average = ""
                 rate = "insufficient data"
-            elif daily_exchange_rate[0].date != date.date():
-                average = ""
-                rate = "insufficient data"
             else:
                 average = self.get_average_rate(daily_exchange_rate)
-                rate = daily_exchange_rate[0].date
+                rate = daily_exchange_rate[0].rate
             tmp_data = {'average': average, 'rate': rate}
             exchange_rate_serializer = ExchangeRatesSerializer(data)
             tmp_data.update(exchange_rate_serializer.data)
